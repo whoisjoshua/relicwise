@@ -1,2 +1,2 @@
 # relicwise
-Honkai Star Rail (HSR) Relice Rater
+Honkai Star Rail (HSR) Relic Rater
