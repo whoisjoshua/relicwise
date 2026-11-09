@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" role="img" aria-label="relicwise">
+  <defs>
+    <linearGradient id="rw-g" x1="6" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#D9CCFF"/>
+      <stop offset=".55" stop-color="#B9A3FF"/>
+      <stop offset="1" stop-color="#FFD59A"/>
+    </linearGradient>
+    <clipPath id="rw-c"><path d="M24 4C25.6 15.2 32.8 22.4 44 24 32.8 25.6 25.6 32.8 24 44 22.4 32.8 15.2 25.6 4 24 15.2 22.4 22.4 15.2 24 4Z"/></clipPath>
+  </defs>
+  <!-- main star: a relic "gem" cut into facets -->
+  <path d="M24 4C25.6 15.2 32.8 22.4 44 24 32.8 25.6 25.6 32.8 24 44 22.4 32.8 15.2 25.6 4 24 15.2 22.4 22.4 15.2 24 4Z" fill="url(#rw-g)"/>
+  <g clip-path="url(#rw-c)">
+    <path d="M24 0 48 24H24Z" fill="#fff" fill-opacity=".38"/>
+    <path d="M0 24H24V48Z" fill="#000" fill-opacity=".16"/>
+  </g>
+  <!-- companion spark -->
+  <path d="M39 3.5C39.45 6.75 40.75 8.05 44 8.5 40.75 8.95 39.45 10.25 39 13.5 38.55 10.25 37.25 8.95 34 8.5 37.25 8.05 38.55 6.75 39 3.5Z" fill="#FFD59A"/>
+</svg>

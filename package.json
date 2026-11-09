@@ -1,0 +1,11 @@
+{
+  "name": "relicwise",
+  "private": true,
+  "type": "module",
+  "description": "Honkai: Star Rail relic intelligence. Static site, no build step.",
+  "scripts": {
+    "dev": "python3 tools/dev_server.py",
+    "data": "python3 tools/build_data.py",
+    "test": "node tests/run.js"
+  }
+}

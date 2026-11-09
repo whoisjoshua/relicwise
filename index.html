@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>relicwise</title>
+  <meta name="description" content="Honkai: Star Rail relic intelligence. Grade every relic against every character, find each piece's best owner, plan speed tiers, scan relics from your screen and rate your warp luck.">
+  <meta name="theme-color" content="#08080a">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="css/styles.css">
+  <script>
+    // Apply the saved theme before first paint so there's no flash.
+    try { const t = localStorage.getItem('rw:theme'); if (t) document.documentElement.dataset.theme = t } catch (e) {}
+  </script>
+</head>
+<body>
+  <div class="aura" aria-hidden="true"><i></i><i></i><i></i></div>
+
+  <header class="top">
+    <a class="brand" href="#/" aria-label="relicwise home">
+      <img src="assets/logo.svg" alt="" width="26" height="26">
+      <span class="word">relicwise</span>
+    </a>
+    <nav class="tabs" id="tabs" aria-label="Sections">
+      <span class="tab-ind" aria-hidden="true"></span>
+    </nav>
+    <div class="top-right">
+      <button class="chip uid-chip" id="uidChip" hidden></button>
+      <button class="icon-btn" id="themeBtn" aria-label="Toggle light/dark theme"></button>
+      <button class="icon-btn" id="settingsBtn" aria-label="Settings"></button>
+    </div>
+  </header>
+
+  <main id="view" class="view" tabindex="-1"></main>
+
+  <footer class="foot">
+    <span>relicwise is a fan project and isn't affiliated with HoYoverse.</span>
+    <span>Game data: <a href="https://github.com/Mar-7th/StarRailRes" target="_blank" rel="noopener">StarRailRes</a> ·
+      build data: <a href="https://github.com/fribbels/hsr-optimizer" target="_blank" rel="noopener">Fribbels HSR Optimizer</a> (MIT) ·
+      profiles: <a href="https://enka.network" target="_blank" rel="noopener">Enka.Network</a></span>
+  </footer>
+
+  <div class="scrim" id="scrim" hidden></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Relic details">
+    <button class="icon-btn drawer-close" id="drawerClose" aria-label="Close"></button>
+    <div class="drawer-body" id="drawerBody"></div>
+  </aside>
+
+  <dialog class="dlg" id="settingsDlg">
+    <form method="dialog" class="dlg-x"><button class="icon-btn" aria-label="Close" id="settingsClose"></button></form>
+    <h2>Settings</h2>
+    <label class="field">
+      <input id="proxyInput" type="url" placeholder=" " autocomplete="off" spellcheck="false">
+      <span>Proxy URL</span>
+    </label>
+    <p class="note">Enka.Network and the warp-history API don't allow direct browser requests, so relicwise sends them through a
+      small proxy you deploy for free (see <code>worker/</code> in the repo). Leave it empty when running locally with
+      <code>python3 tools/dev_server.py</code>.</p>
+    <div class="row">
+      <button class="btn" id="proxyTest" type="button">Test connection</button>
+      <button class="btn primary" id="proxySave" type="button">Save</button>
+      <span class="note" id="proxyMsg"></span>
+    </div>
+    <hr>
+    <h3>Stored in this browser</h3>
+    <p class="note">Profiles, warp history and scanned relics are saved only in this browser (localStorage).</p>
+    <div class="row">
+      <button class="btn" id="clearProfiles" type="button">Forget profiles</button>
+      <button class="btn" id="clearWarps" type="button">Delete warp history</button>
+      <button class="btn" id="clearScans" type="button">Delete scanned relics</button>
+    </div>
+  </dialog>
+
+  <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

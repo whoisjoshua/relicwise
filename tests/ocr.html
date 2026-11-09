@@ -1,0 +1,68 @@
+<!doctype html><html><head><meta charset="utf-8">
+<!-- Browser OCR regression test. Run the dev server, open http://localhost:8000/tests/ocr.html and read the output.
+     Draws synthetic HSR-style relic panels at 720p, 1080p, 1440p and 3440x1440 and runs the real scanner on them. -->
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&display=swap" rel="stylesheet"></head>
+<body style="background:#111;color:#eee;font:12px monospace"><pre id="out">running…</pre>
+<script type="module">
+import { loadData } from '../js/data.js';
+import { ensureOcr, scanFrame, resetScanner, debug } from '../js/ocr.js';
+import { STAT_SHORT, fmtStat } from '../js/stats.js';
+await loadData('../data/');
+await document.fonts.load('600 20px Geist');
+const out = document.getElementById('out');
+const log = (s) => { out.textContent += '\n' + s; console.log(s); };
+
+// Fake HSR relic detail panel, drawn relative to a unit size so it scales with resolution.
+function frame(W, H, px, py, relic) {
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  const grd = g.createLinearGradient(0, 0, W, H); grd.addColorStop(0, '#1b1d2a'); grd.addColorStop(1, '#0c0d14');
+  g.fillStyle = grd; g.fillRect(0, 0, W, H);
+  const u = H / 1080; // 1 unit = 1px at 1080p
+  g.fillStyle = '#cfd3e0'; g.font = `500 ${26 * u}px Geist`; g.fillText('Inventory', 60 * u, 70 * u);
+  g.font = `400 ${20 * u}px Geist`; g.fillText('Relics      Light Cones      Materials', 60 * u, 120 * u);
+  g.fillText('Sort by: Level', 60 * u, 1020 * u);
+  for (let i = 0; i < 20; i++) { g.fillStyle = '#2a2d40'; g.fillRect((60 + (i % 5) * 120) * u, (170 + Math.floor(i / 5) * 140) * u, 100 * u, 120 * u); }
+  const x = px * W, y = py * H;
+  g.fillStyle = 'rgba(20,22,34,.92)'; g.fillRect(x - 24 * u, y - 50 * u, 470 * u, 640 * u);
+  g.fillStyle = '#f4e9d0'; g.font = `600 ${30 * u}px Geist`; g.fillText(relic.name, x, y);
+  g.fillStyle = '#b7bccb'; g.font = `400 ${20 * u}px Geist`; g.fillText(relic.slot, x, y + 40 * u);
+  g.fillStyle = '#ffffff'; g.font = `600 ${22 * u}px Geist`; g.fillText('+' + relic.level, x, y + 80 * u);
+  const row = (label, val, yy, size, color) => {
+    g.font = `500 ${size * u}px Geist`; g.fillStyle = color; g.fillText(label, x, yy);
+    const w = g.measureText(val).width; g.fillText(val, x + 420 * u - w, yy);
+  };
+  row(relic.main[0], relic.main[1], y + 130 * u, 24, '#f2d48a');
+  relic.subs.forEach(([l, v], i) => row(l, v, y + (180 + i * 42) * u, 21, '#e6e8ef'));
+  g.fillStyle = '#9aa0b4'; g.font = `400 ${18 * u}px Geist`;
+  g.fillText(relic.set, x, y + 370 * u);
+  g.fillText('2-Pc: ATK increases by 12%.', x, y + 405 * u);
+  g.fillText('4-Pc: For every DoT the target enemy is afflicted with,', x, y + 435 * u);
+  return c;
+}
+const A = { name: "Prisoner's Sealed Muzzle", slot: 'Head', level: 15, set: 'Prisoner in Deep Confinement',
+  main: ['HP', '705'], subs: [['ATK', '35'], ['HP', '3.8%'], ['SPD', '7'], ['Effect Hit Rate', '7.7%']] };
+const B = { name: "Pioneer's Starfaring Anchor", slot: 'Feet', level: 12, set: 'Pioneer Diver of Dead Waters',
+  main: ['SPD', '21'], subs: [['CRIT Rate', '8.4%'], ['CRIT DMG', '11.6%'], ['ATK', '7.7%'], ['Break Effect', '5.1%']] };
+const C = { name: "Izumo's Blades of Origin and End", slot: 'Link Rope', level: 15, set: 'Izumo Gensei and Takama Divine Realm',
+  main: ['ATK', '43.2%'], subs: [['DEF', '19'], ['CRIT Rate', '5.8%'], ['CRIT DMG', '18.1%'], ['Effect RES', '3.4%']] };
+
+await ensureOcr();
+const cases = [[1280, 720, 0.62, 0.18, A], [1920, 1080, 0.66, 0.2, B], [2560, 1440, 0.58, 0.25, C], [3440, 1440, 0.7, 0.2, A]];
+for (const [W, H, px, py, r] of cases) {
+  resetScanner();
+  const t0 = performance.now();
+  const res = await scanFrame(frame(W, H, px, py, r), W, H);
+  const ms = Math.round(performance.now() - t0);
+  if (res.miss) { log(`${W}x${H}: MISS ${res.miss} :: ${JSON.stringify(debug.lines)}`); continue; }
+  const x = res.relic;
+  log(`${W}x${H} (${ms}ms): ${x.name} set=${x.set} ${x.slot} +${x.level} main=${x.main.stat} | ${x.subs.map(s => `${STAT_SHORT[s.stat]} ${fmtStat(s.stat, s.value)}×${s.rolls}`).join(', ')} issues=${res.issues.join(',') || 'none'}`);
+}
+// second pass on the same frame uses the cached ROI (fast path)
+const f2 = frame(1920, 1080, 0.66, 0.2, B);
+resetScanner(); await scanFrame(f2, 1920, 1080);
+const t1 = performance.now(); const again = await scanFrame(f2, 1920, 1080);
+log(`ROI fast path: ${Math.round(performance.now() - t1)}ms ${again.relic ? 'ok' : again.miss}`);
+log('DONE');
+document.title = 'DONE';
+</script></body></html>

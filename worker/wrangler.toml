@@ -1,0 +1,7 @@
+name = "relicwise-proxy"
+main = "index.js"
+compatibility_date = "2025-09-01"
+
+[vars]
+# Sites allowed to call this proxy (comma separated). Add your custom domain / GitHub Pages URL.
+ALLOWED_ORIGINS = "https://relicwise.jzeng.io,https://whoisjoshua.github.io,http://localhost:8000,http://127.0.0.1:8000"
